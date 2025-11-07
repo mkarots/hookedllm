@@ -3,13 +3,16 @@
 
 ## Executive Summary
 
-**hookedllm** is an async-first, type-safe Python package that provides transparent observability for LLM calls through a wrapper pattern with **scoped hook execution** and **dependency injection**. It enables developers to isolate hooks to specific parts of their application while following SOLID principles for testability and extensibility.
+**hookedllm** is an async-first, type-safe Python package that provides
+transparent observability for LLM calls through a wrapper pattern with
+**scoped hook execution** and **dependency injection**. It enables 
+developers to isolate hooks to specific parts of their application 
+while following SOLID principles for testability and extensibility.
 
 ### Core Principles
 
 1. **Transparent Drop-in**: `client = hookedllm.wrap(AsyncOpenAI())` - no code changes
 2. **Scoped Isolation**: Named scopes prevent hook interference across application contexts  
-3. **SOLID Compliant**: Follows all SOLID principles with dependency injection
 4. **Minimal Imports**: Import just `hookedllm`, use OpenAI SDK as-is
 5. **Conditional Execution**: Hooks run only when rules match (model, tags, metadata)
 6. **Config or Code**: Define scopes/hooks programmatically or via YAML
