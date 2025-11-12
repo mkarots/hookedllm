@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hookedllm"
-version = "0.1.0"
+version = "0.0.2"
 description = "Async-first, scoped hook system for LLM observability with SOLID/DI architecture"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "you@example.com"}
+    {name = "Michael Karotsieris", email = "michael.karotsieris@gmail.com"}
 ]
 keywords = ["llm", "hooks", "observability", "openai", "monitoring", "evaluation"]
 classifiers = [
