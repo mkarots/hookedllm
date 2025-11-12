@@ -57,6 +57,77 @@ response = await client.chat.completions.create(
 )
 ```
 
+## 📖 Examples
+
+Explore the [`examples/`](examples/) directory for complete, runnable demonstrations:
+
+### Getting Started
+- **[`simple_demo.py`](examples/simple_demo.py)** - Your first hookedllm program
+  - Complete working example with real LLM calls
+  - Automatic metrics tracking with `MetricsHook`
+  - Response evaluation with `EvaluationHook`
+  - Perfect starting point for new users
+
+- **[`basic_usage.py`](examples/basic_usage.py)** - Core concepts walkthrough
+  - Simple hook registration
+  - Scoped vs global hooks
+  - Conditional rules with `when`
+  - Multiple scope usage
+
+### Advanced Features
+- **[`global_hooks_demo.py`](examples/global_hooks_demo.py)** - Global hooks in action
+  - 5 different LLM calls with global before/after hooks
+  - Shows all data provided by the framework
+  - Demonstrates hook execution flow
+  - Metrics aggregation across calls
+
+- **[`scopes_demo.py`](examples/scopes_demo.py)** - Scope isolation deep dive
+  - Prevents hook interference across contexts
+  - Development vs production vs evaluation scopes
+  - Multi-scope client usage
+  - Real-world use case examples
+
+- **[`evaluation_and_metrics.py`](examples/evaluation_and_metrics.py)** - Built-in helpers
+  - Using `MetricsHook` for automatic tracking
+  - Using `EvaluationHook` for quality scoring
+  - Conditional evaluation (only for specific models)
+  - Multiple scope combinations
+
+### Integrations
+- **[`integrations/langfuse_integration.py`](examples/integrations/langfuse_integration.py)** - Langfuse observability
+  - Automatic trace and generation tracking
+  - Token usage and cost monitoring
+  - Error tracking with full context
+  - Metadata enrichment
+
+- **[`integrations/opentelemetry_integration.py`](examples/integrations/opentelemetry_integration.py)** - OpenTelemetry tracing
+  - Distributed tracing for LLM calls
+  - Semantic conventions for LLM observability
+  - Span creation with attributes and events
+  - Integration with existing OTel infrastructure
+
+### Running the Examples
+
+```bash
+# Install with OpenAI support
+pip install -e .[openai]
+
+# Set your API key
+export OPENAI_API_KEY=your-key-here
+
+# Run any example
+python examples/simple_demo.py
+python examples/scopes_demo.py
+python examples/integrations/langfuse_integration.py
+```
+
+Each example includes:
+- ✅ Complete, runnable code
+- 📝 Detailed inline comments
+- 🚀 Setup instructions
+- 💡 Real-world use cases
+- 🎯 Best practices
+
 ## 📚 Core Concepts
 
 ### Scopes
