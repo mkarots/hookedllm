@@ -101,10 +101,18 @@ Explore the [`examples/`](examples/) directory for complete, runnable demonstrat
   - Metadata enrichment
 
 - **[`integrations/opentelemetry_integration.py`](examples/integrations/opentelemetry_integration.py)** - OpenTelemetry tracing
-  - Distributed tracing for LLM calls
+  - Comprehensive distributed tracing for LLM calls
+  - Rich span data (tokens, cost, latency, metadata)
   - Semantic conventions for LLM observability
-  - Span creation with attributes and events
+  - Events, attributes, and error tracking
   - Integration with existing OTel infrastructure
+
+- **[`integrations/posthog_integration.py`](examples/integrations/posthog_integration.py)** - PostHog analytics
+  - Product analytics for LLM applications
+  - Track usage, costs, and user behavior
+  - User attribution and session tracking
+  - Feature adoption metrics
+  - Cost per user/session analysis
 
 ### Running the Examples
 

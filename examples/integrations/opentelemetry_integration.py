@@ -1,91 +1,54 @@
-
 """
-Example: OpenTelemetry Integration with hookedllm
+OpenTelemetry Integration - Rich Distributed Tracing
 
-This example shows how to integrate hookedllm with OpenTelemetry for distributed tracing.
-
-OpenTelemetry provides:
-- Distributed tracing across services
-- Metrics collection
-- Standard instrumentation
-- Vendor-neutral observability
+Shows comprehensive span data capture for LLM calls.
 
 To run:
-1. pip install hookedllm openai opentelemetry-api opentelemetry-sdk
-2. export OPENAI_API_KEY=your-key
-3. python examples/integrations/opentelemetry_integration.py
+  pip install hookedllm[openai] opentelemetry-api opentelemetry-sdk
+  export OPENAI_API_KEY=your-key
+  python examples/integrations/opentelemetry_integration.py
 """
 
 import asyncio
 import os
 from openai import AsyncOpenAI
-
-# OpenTelemetry imports
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import ConsoleSpanExporter, BatchSpanProcessor
-from opentelemetry.trace import Status, StatusCode
-from opentelemetry.semconv.trace import SpanAttributes
-
-# Import hookedllm
-import sys
-sys.path.insert(0, '../../src')
+from opentelemetry.trace import Status, StatusCode, SpanKind
 import hookedllm
 
 
-# ============================================================
-# OpenTelemetry Integration Hooks
-# ============================================================
-
-class OpenTelemetryHooks:
-    """
-    Integration hooks for OpenTelemetry distributed tracing.
+class RichOpenTelemetryHooks:
+    """Comprehensive OpenTelemetry integration with rich span data."""
     
-    Automatically creates spans for all LLM calls with:
-    - Span names (llm.{model})
-    - Attributes (model, tokens, latency)
-    - Status (success/error)
-    - Events (for important milestones)
-    """
-    
-    def __init__(
-        self,
-        tracer_name: str = "hookedllm",
-        service_name: str = "llm-service"
-    ):
-        """Initialize OpenTelemetry tracer."""
-        self.tracer = trace.get_tracer(tracer_name)
-        self.service_name = service_name
-        self._spans = {}  # Map call_id to span
+    def __init__(self):
+        self.tracer = trace.get_tracer("hookedllm", "1.0.0")
+        self._spans = {}
     
     async def before_hook(self, call_input, context):
-        """
-        Start OpenTelemetry span before LLM call.
-        
-        Creates a span with:
-        - Name: llm.{model}
-        - Attributes: model, provider, messages, parameters
-        - Kind: CLIENT (outgoing request)
-        """
-        # Start span
+        """Start span with comprehensive attributes."""
         span = self.tracer.start_span(
-            name=f"llm.{call_input.model}",
-            kind=trace.SpanKind.CLIENT,
+            name=f"llm.chat.{call_input.model}",
+            kind=SpanKind.CLIENT,
             attributes={
-                # Standard OpenTelemetry semantic conventions
-                "service.name": self.service_name,
+                # LLM-specific attributes
                 "llm.system": context.provider,
                 "llm.request.model": call_input.model,
                 "llm.request.temperature": call_input.params.get("temperature"),
                 "llm.request.max_tokens": call_input.params.get("max_tokens"),
                 "llm.request.top_p": call_input.params.get("top_p"),
                 
-                # Custom attributes
+                # Message metadata
+                "llm.request.message_count": len(call_input.messages),
+                "llm.request.first_message_role": call_input.messages[0].role if call_input.messages else None,
+                
+                # Context
                 "llm.call_id": context.call_id,
                 "llm.tags": ",".join(context.tags) if context.tags else "",
                 
-                # Message count
-                "llm.request.message_count": len(call_input.messages),
+                # Custom metadata
+                **{f"llm.metadata.{k}": str(v) for k, v in context.metadata.items()}
             }
         )
         
@@ -98,21 +61,11 @@ class OpenTelemetryHooks:
             }
         )
         
-        # Store span
         self._spans[context.call_id] = span
-        
-        print(f"🔍 [OTel] Started span: llm.{call_input.model}")
+        print(f"🔍 OTel: Started rich span for {call_input.model}")
     
     async def after_hook(self, call_input, call_output, context):
-        """
-        Update span with successful response.
-        
-        Adds:
-        - Token usage attributes
-        - Finish reason
-        - Response metadata
-        - Success status
-        """
+        """End span with comprehensive output data."""
         if context.call_id in self._spans:
             span = self._spans[context.call_id]
             
@@ -131,6 +84,8 @@ class OpenTelemetryHooks:
             
             if call_output.text:
                 span.set_attribute("llm.response.length", len(call_output.text))
+                # First 100 chars as sample
+                span.set_attribute("llm.response.sample", call_output.text[:100])
             
             # Add event for successful response
             span.add_event(
@@ -142,26 +97,19 @@ class OpenTelemetryHooks:
             )
             
             # Set success status
-            span.set_status(Status(StatusCode.OK))
+            span.set_status(Status(StatusCode.OK, "LLM call completed successfully"))
+            span.end()
             
-            print(f"✅ [OTel] Span successful: {call_output.usage.get('total_tokens', 0) if call_output.usage else 0} tokens")
+            del self._spans[context.call_id]
+            print(f"✅ OTel: Rich span completed with full metadata")
     
     async def error_hook(self, call_input, error, context):
-        """
-        Mark span as failed.
-        
-        Adds:
-        - Error status
-        - Exception details
-        - Error event
-        """
+        """Handle errors with detailed span data."""
         if context.call_id in self._spans:
             span = self._spans[context.call_id]
             
             # Set error status
-            span.set_status(
-                Status(StatusCode.ERROR, f"{type(error).__name__}: {str(error)}")
-            )
+            span.set_status(Status(StatusCode.ERROR, str(error)))
             
             # Record exception
             span.record_exception(error)
@@ -175,58 +123,76 @@ class OpenTelemetryHooks:
                 }
             )
             
-            print(f"❌ [OTel] Span failed: {type(error).__name__}")
+            span.end()
+            del self._spans[context.call_id]
+            print(f"❌ OTel: Error span recorded")
     
     async def finally_hook(self, result):
-        """
-        End span and add final attributes.
-        
-        Adds:
-        - Total latency
-        - Final status
-        """
-        if result.context.call_id in self._spans:
-            span = self._spans[result.context.call_id]
-            
-            # Add latency
-            span.set_attribute("llm.latency_ms", result.elapsed_ms)
-            
-            # Add event for completion
-            span.add_event(
-                "llm.call.completed",
-                attributes={
-                    "latency_ms": result.elapsed_ms,
-                    "success": result.error is None
-                }
-            )
-            
-            # End span
-            span.end()
-            
-            # Clean up
-            del self._spans[result.context.call_id]
-            
-            print(f"🏁 [OTel] Span ended ({result.elapsed_ms:.0f}ms)")
-    
-    def register(self, scope: str = "opentelemetry"):
-        """Register all hooks with hookedllm."""
-        hookedllm.scope(scope).before(self.before_hook)
-        hookedllm.scope(scope).after(self.after_hook)
-        hookedllm.scope(scope).error(self.error_hook)
-        hookedllm.scope(scope).finally_(self.finally_hook)
-        print(f"✓ OpenTelemetry hooks registered to scope '{scope}'")
+        """Add final timing data."""
+        # Note: Span already ended in after/error hooks
+        # This is just for demonstration of finally hook
+        print(f"⏱️  OTel: Call took {result.elapsed_ms:.0f}ms")
 
-
-# ============================================================
-# Example Usage
-# ============================================================
 
 async def main():
-    """Demonstrate OpenTelemetry integration."""
-    
-    # Get API key
-    openai_key = os.getenv("OPENAI_API_KEY")
-    if not openai_key:
-        print("ERROR: Set OPENAI_API_KEY environment variable")
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("ERROR: Set OPENAI_API_KEY")
         return
     
+    print("OpenTelemetry Rich Integration\n" + "=" * 60)
+    
+    # Setup OpenTelemetry
+    provider = TracerProvider()
+    processor = BatchSpanProcessor(ConsoleSpanExporter())
+    provider.add_span_processor(processor)
+    trace.set_tracer_provider(provider)
+    print("✓ OpenTelemetry configured with console exporter")
+    
+    # Setup comprehensive hooks
+    otel = RichOpenTelemetryHooks()
+    hookedllm.scope("otel").before(otel.before_hook)
+    hookedllm.scope("otel").after(otel.after_hook)
+    hookedllm.scope("otel").error(otel.error_hook)
+    hookedllm.scope("otel").finally_(otel.finally_hook)
+    print("✓ Rich OTel hooks registered")
+    
+    # Create client
+    client = hookedllm.wrap(AsyncOpenAI(api_key=api_key), scope="otel")
+    
+    # Make call with metadata
+    print("\nMaking LLM call with rich context...")
+    response = await client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Explain Python in one sentence."}
+        ],
+        temperature=0.7,
+        max_tokens=50,
+        extra_body={
+            "hookedllm_tags": ["demo", "otel"],
+            "hookedllm_metadata": {
+                "user_id": "demo_user",
+                "session_id": "session_123",
+                "environment": "development"
+            }
+        }
+    )
+    
+    print(f"\nResponse: {response.choices[0].message.content}")
+    
+    print("\n" + "=" * 60)
+    print("Span Data Captured:")
+    print("  ✓ Model, provider, parameters")
+    print("  ✓ Token usage (prompt, completion, total)")
+    print("  ✓ Response metadata (finish_reason, length, sample)")
+    print("  ✓ Custom tags and metadata")
+    print("  ✓ Events (request started, response received)")
+    print("  ✓ Timing (latency)")
+    print("  ✓ Status (success/error)")
+    print("\nCheck console output above for full span details!")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
