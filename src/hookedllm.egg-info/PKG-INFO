@@ -2,12 +2,12 @@ Metadata-Version: 2.4
 Name: hookedllm
 Version: 0.1.0
 Summary: Async-first, scoped hook system for LLM observability with SOLID/DI architecture
-Author-email: Your Name <you@example.com>
+Author-email: Michael Karotsieris <michael.karotsieris@example.com>
 License: MIT
-Project-URL: Homepage, https://github.com/yourorg/hookedllm
-Project-URL: Documentation, https://hookedllm.readthedocs.io
-Project-URL: Repository, https://github.com/yourorg/hookedllm
-Project-URL: Issues, https://github.com/yourorg/hookedllm/issues
+Project-URL: Homepage, https://github.com/CepstrumLabs/hookedllm
+Project-URL: Documentation, https://cepstrumlabs.github.io/hookedllm/
+Project-URL: Repository, https://github.com/CepstrumLabs/hookedllm
+Project-URL: Issues, https://github.com/CepstrumLabs/hookedllm/issues
 Keywords: llm,hooks,observability,openai,monitoring,evaluation
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers
@@ -20,6 +20,7 @@ Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
+License-File: LICENSE
 Provides-Extra: openai
 Requires-Dist: openai>=1.0.0; extra == "openai"
 Provides-Extra: anthropic
@@ -38,6 +39,12 @@ Requires-Dist: mypy>=1.0.0; extra == "dev"
 Requires-Dist: black>=23.0.0; extra == "dev"
 Requires-Dist: ruff>=0.1.0; extra == "dev"
 Requires-Dist: isort>=5.12.0; extra == "dev"
+Provides-Extra: docs
+Requires-Dist: mkdocs>=1.5.0; extra == "docs"
+Requires-Dist: mkdocs-material>=9.0.0; extra == "docs"
+Requires-Dist: mkdocstrings[python]>=0.23.0; extra == "docs"
+Requires-Dist: mkdocs-gen-files>=0.5.0; extra == "docs"
+Dynamic: license-file
 
 # HookedLLM
 
@@ -45,6 +52,7 @@ Requires-Dist: isort>=5.12.0; extra == "dev"
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://cepstrumlabs.github.io/hookedllm/)
 
 HookedLLM provides transparent observability for LLM calls through a powerful hook system. Add evaluation, logging, metrics, and custom behaviors to your LLM applications without modifying core application logic.
 
@@ -346,11 +354,15 @@ response = await client.chat.completions.create(
 
 ## 🤝 Contributing
 
-Contributions welcome! Please see our contributing guidelines.
+Contributions welcome! Please see our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## 🔒 Security
+
+Please see [SECURITY.md](SECURITY.md) for security policy and reporting vulnerabilities.
 
 ## 🙏 Acknowledgments
 

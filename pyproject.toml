@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "you@example.com"}
+    {name = "Michael Karotsieris", email = "michael.karotsieris@example.com"}
 ]
 keywords = ["llm", "hooks", "observability", "openai", "monitoring", "evaluation"]
 classifiers = [
@@ -56,11 +56,19 @@ dev = [
     "isort>=5.12.0",
 ]
 
+# Documentation dependencies
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.23.0",
+    "mkdocs-gen-files>=0.5.0",
+]
+
 [project.urls]
-Homepage = "https://github.com/yourorg/hookedllm"
-Documentation = "https://hookedllm.readthedocs.io"
-Repository = "https://github.com/yourorg/hookedllm"
-Issues = "https://github.com/yourorg/hookedllm/issues"
+Homepage = "https://github.com/CepstrumLabs/hookedllm"
+Documentation = "https://cepstrumlabs.github.io/hookedllm/"
+Repository = "https://github.com/CepstrumLabs/hookedllm"
+Issues = "https://github.com/CepstrumLabs/hookedllm/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

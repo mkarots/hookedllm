@@ -1,0 +1,104 @@
+site_name: HookedLLM
+site_description: Async-first, scoped hook system for LLM observability with SOLID/DI architecture
+site_url: https://cepstrumlabs.github.io/hookedllm/
+site_author: Michael Karotsieris
+
+repo_name: CepstrumLabs/hookedllm
+repo_url: https://github.com/CepstrumLabs/hookedllm
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+    - content.code.copy
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_ref_pages.py
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_toc_entry: true
+            show_root_full_path: false
+            show_object_full_path: false
+            show_category_heading: true
+            show_if_no_docstring: false
+            show_signature_annotations: true
+            separate_signature: false
+            line_length: 100
+            merge_init_into_class: true
+            show_submodules: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Quick Start: quick-start.md
+  - Core Concepts:
+    - scopes.md
+    - hooks.md
+    - rules.md
+  - Examples:
+    - examples/basic-usage.md
+    - examples/scopes.md
+    - examples/advanced.md
+    - examples/travel-assistant.md
+  - Guides:
+    - guides/dependency-injection.md
+    - guides/testing.md
+    - guides/architecture.md
+  - Advanced Guides:
+    - advanced-setup.md
+    - guides/performance.md
+    - guides/lifecycle.md
+    - guides/observability.md
+    - guides/error-handling.md
+  - API Reference:
+    - api/index.md
+  - Contributing: contributing.md
+
