@@ -23,7 +23,7 @@ Advanced usage (custom DI):
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Union
+from typing import Any
 
 from .core import (
     AfterHook,
@@ -53,9 +53,7 @@ class HookedLLMContext:
     - Explicit: dependencies are clear
     """
 
-    def __init__(
-        self, registry: ScopeRegistry | None = None, executor: HookExecutor | None = None
-    ):
+    def __init__(self, registry: ScopeRegistry | None = None, executor: HookExecutor | None = None):
         """
         Initialize context with optional dependency injection.
 
@@ -67,9 +65,7 @@ class HookedLLMContext:
         self.registry = registry or InMemoryScopeRegistry()
         self.executor = executor or DefaultHookExecutor()
 
-    def wrap(
-        self, client: Any, scope: str | list[str] | None = None
-    ) -> HookedClientWrapper:
+    def wrap(self, client: Any, scope: str | list[str] | None = None) -> HookedClientWrapper:
         """
         Wrap a client using this context's dependencies.
 

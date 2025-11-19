@@ -5,7 +5,6 @@ These tests demonstrate that the core system works without requiring
 actual LLM API calls.
 """
 
-
 import pytest
 
 from hookedllm.core.executor import DefaultHookExecutor
@@ -233,27 +232,24 @@ class TestExecutor:
 class TestIntegration:
     """Integration tests."""
 
-    def test_full_flow_concept(self):
-        """Test the conceptual flow of the system."""
-        # This test demonstrates the flow without actual LLM calls
-
-        # 1. Create registry and executor
+    def test_scope_registration_and_retrieval(self):
+        """Test registering hooks to scopes and retrieving them for clients."""
+        # 1. Create registry
         registry = InMemoryScopeRegistry()
-        executor = DefaultHookExecutor()
 
         # 2. Register hook to a scope
         async def my_hook(call_input, call_output, context):
             pass
 
-        eval_scope = registry.get_scope("evaluation")
+        eval_scope = registry.scope("evaluation")
         eval_scope.add_after(my_hook)
 
         # 3. Get scopes for a client
         scopes = registry.get_scopes_for_client(["evaluation"])
 
-        # 4. Verify we have hooks
+        # 4. Verify hooks are retrieved correctly
         all_hooks = []
         for scope in scopes:
             all_hooks.extend(scope.get_after_hooks())
 
-        assert len(all_hooks) >= 1  # At least our hook
+        assert len(all_hooks) >= 1  # At least our registered hook

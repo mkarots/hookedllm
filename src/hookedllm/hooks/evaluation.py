@@ -140,7 +140,7 @@ Evaluation Criteria:
 
 For each criterion, provide a score from 0.0 to 1.0, where:
 - 0.0 = Completely fails the criterion
-- 0.5 = Partially meets the criterion  
+- 0.5 = Partially meets the criterion
 - 1.0 = Fully meets the criterion
 
 Respond with a JSON object containing:

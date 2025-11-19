@@ -44,10 +44,10 @@ def load_config(path: str, context: Any | None = None) -> None:
     """
     try:
         import yaml
-    except ImportError:
+    except ImportError as e:
         raise ImportError(
             "PyYAML is required for config loading. " "Install with: pip install hookedllm[config]"
-        )
+        ) from e
 
     # Load YAML file
     config_path = Path(path)
