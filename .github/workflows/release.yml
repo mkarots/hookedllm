@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v0.1.0, v1.2.3, etc.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.0)'
+        required: true
+        type: string
+
+jobs:
+  build-and-publish:
+    name: Build and Publish to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # For creating GitHub releases
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for tags
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+        cache: 'pip'
+    
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    
+    - name: Extract version from tag or input
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          VERSION=${GITHUB_REF#refs/tags/v}
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+    
+    - name: Verify version matches pyproject.toml
+      run: |
+        PYPROJECT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        if [ "$PYPROJECT_VERSION" != "${{ steps.get_version.outputs.version }}" ]; then
+          echo "ERROR: Version mismatch!"
+          echo "Tag/Input version: ${{ steps.get_version.outputs.version }}"
+          echo "pyproject.toml version: $PYPROJECT_VERSION"
+          exit 1
+        fi
+        echo "✓ Version matches pyproject.toml"
+    
+    - name: Run pre-publish checks
+      run: |
+        make install-dev
+        make pre-publish
+    
+    - name: Build distribution packages
+      run: make build
+    
+    - name: Verify build artifacts
+      run: make verify-build
+    
+    - name: Test installation
+      run: make test-install
+    
+    - name: Build documentation
+      run: make docs-build
+    
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        if [ -d "build-env" ]; then \
+          build-env/bin/twine upload --username "$TWINE_USERNAME" --password "$TWINE_PASSWORD" dist/*; \
+        else \
+          twine upload --username "$TWINE_USERNAME" --password "$TWINE_PASSWORD" dist/*; \
+        fi
+      if: success()
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.get_version.outputs.version }}
+        name: Release v${{ steps.get_version.outputs.version }}
+        body: |
+          ## Changes in v${{ steps.get_version.outputs.version }}
+          
+          See [CHANGELOG.md](CHANGELOG.md) for details.
+          
+          ### Installation
+          ```bash
+          pip install hookedllm==${{ steps.get_version.outputs.version }}
+          ```
+          
+          ### Documentation
+          📚 [View Documentation](https://cepstrumlabs.github.io/hookedllm/)
+        draft: false
+        prerelease: false
+      if: success() && github.event_name != 'workflow_dispatch'
