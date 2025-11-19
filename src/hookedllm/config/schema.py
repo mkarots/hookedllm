@@ -5,15 +5,16 @@ Defines the structure of YAML configuration files.
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional, Literal
+from typing import Any, Dict, List, Literal, Optional
 
 
 @dataclass
 class WhenConfig:
     """Rule configuration from YAML."""
+
     model: Optional[str] = None
     models: Optional[List[str]] = None
-    tag: Optional[str] = None 
+    tag: Optional[str] = None
     tags: Optional[List[str]] = None
     metadata: Optional[Dict[str, Any]] = None
     all_calls: bool = False
@@ -22,6 +23,7 @@ class WhenConfig:
 @dataclass
 class HookConfig:
     """Single hook configuration from YAML."""
+
     name: str
     type: Literal["before", "after", "error", "finally"]
     module: str
@@ -34,11 +36,13 @@ class HookConfig:
 @dataclass
 class ScopeConfig:
     """Scope configuration with its hooks."""
+
     hooks: List[HookConfig]
 
 
 @dataclass
 class RootConfig:
     """Root configuration schema."""
+
     global_hooks: Optional[List[HookConfig]] = None
     scopes: Optional[Dict[str, ScopeConfig]] = None
