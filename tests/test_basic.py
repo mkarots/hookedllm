@@ -5,14 +5,13 @@ These tests demonstrate that the core system works without requiring
 actual LLM API calls.
 """
 
-from unittest.mock import AsyncMock, Mock
 
 import pytest
 
 from hookedllm.core.executor import DefaultHookExecutor
-from hookedllm.core.rules import CompositeRule, ModelRule, TagRule
+from hookedllm.core.rules import ModelRule, TagRule
 from hookedllm.core.scopes import InMemoryScopeHookStore, InMemoryScopeRegistry
-from hookedllm.core.types import CallContext, CallInput, CallOutput, CallResult, Message
+from hookedllm.core.types import CallContext, CallInput, CallOutput, Message
 
 
 class TestTypes:

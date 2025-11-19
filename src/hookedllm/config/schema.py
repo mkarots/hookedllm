@@ -5,18 +5,18 @@ Defines the structure of YAML configuration files.
 """
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 
 @dataclass
 class WhenConfig:
     """Rule configuration from YAML."""
 
-    model: Optional[str] = None
-    models: Optional[List[str]] = None
-    tag: Optional[str] = None
-    tags: Optional[List[str]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    model: str | None = None
+    models: list[str] | None = None
+    tag: str | None = None
+    tags: list[str] | None = None
+    metadata: dict[str, Any] | None = None
     all_calls: bool = False
 
 
@@ -27,22 +27,22 @@ class HookConfig:
     name: str
     type: Literal["before", "after", "error", "finally"]
     module: str
-    function: Optional[str] = None
-    class_name: Optional[str] = None  # Using class_name instead of class (reserved)
-    when: Optional[WhenConfig] = None
-    args: Optional[Dict[str, Any]] = None
+    function: str | None = None
+    class_name: str | None = None  # Using class_name instead of class (reserved)
+    when: WhenConfig | None = None
+    args: dict[str, Any] | None = None
 
 
 @dataclass
 class ScopeConfig:
     """Scope configuration with its hooks."""
 
-    hooks: List[HookConfig]
+    hooks: list[HookConfig]
 
 
 @dataclass
 class RootConfig:
     """Root configuration schema."""
 
-    global_hooks: Optional[List[HookConfig]] = None
-    scopes: Optional[Dict[str, ScopeConfig]] = None
+    global_hooks: list[HookConfig] | None = None
+    scopes: dict[str, ScopeConfig] | None = None

@@ -7,7 +7,8 @@ following the Dependency Inversion Principle.
 
 from __future__ import annotations
 
-from typing import Awaitable, Callable, List, Optional, Protocol, Tuple
+from collections.abc import Awaitable, Callable
+from typing import Protocol
 
 from .types import CallContext, CallInput, CallOutput, CallResult
 
@@ -50,35 +51,35 @@ class ScopeHookStore(Protocol):
     Single Responsibility: Storage only, no execution logic.
     """
 
-    def add_before(self, hook: BeforeHook, rule: Optional[Rule] = None) -> None:
+    def add_before(self, hook: BeforeHook, rule: Rule | None = None) -> None:
         """Add a before hook with optional execution rule."""
         ...
 
-    def add_after(self, hook: AfterHook, rule: Optional[Rule] = None) -> None:
+    def add_after(self, hook: AfterHook, rule: Rule | None = None) -> None:
         """Add an after hook with optional execution rule."""
         ...
 
-    def add_error(self, hook: ErrorHook, rule: Optional[Rule] = None) -> None:
+    def add_error(self, hook: ErrorHook, rule: Rule | None = None) -> None:
         """Add an error hook with optional execution rule."""
         ...
 
-    def add_finally(self, hook: FinallyHook, rule: Optional[Rule] = None) -> None:
+    def add_finally(self, hook: FinallyHook, rule: Rule | None = None) -> None:
         """Add a finally hook with optional execution rule."""
         ...
 
-    def get_before_hooks(self) -> List[Tuple[BeforeHook, Optional[Rule]]]:
+    def get_before_hooks(self) -> list[tuple[BeforeHook, Rule | None]]:
         """Get all before hooks with their rules."""
         ...
 
-    def get_after_hooks(self) -> List[Tuple[AfterHook, Optional[Rule]]]:
+    def get_after_hooks(self) -> list[tuple[AfterHook, Rule | None]]:
         """Get all after hooks with their rules."""
         ...
 
-    def get_error_hooks(self) -> List[Tuple[ErrorHook, Optional[Rule]]]:
+    def get_error_hooks(self) -> list[tuple[ErrorHook, Rule | None]]:
         """Get all error hooks with their rules."""
         ...
 
-    def get_finally_hooks(self) -> List[Tuple[FinallyHook, Optional[Rule]]]:
+    def get_finally_hooks(self) -> list[tuple[FinallyHook, Rule | None]]:
         """Get all finally hooks with their rules."""
         ...
 
@@ -98,7 +99,7 @@ class ScopeRegistry(Protocol):
         """Get the global scope (always active)."""
         ...
 
-    def get_scopes_for_client(self, scope_names: Optional[List[str]]) -> List[ScopeHookStore]:
+    def get_scopes_for_client(self, scope_names: list[str] | None) -> list[ScopeHookStore]:
         """Get list of scopes for a client."""
         ...
 
@@ -112,7 +113,7 @@ class HookExecutor(Protocol):
 
     async def execute_before(
         self,
-        hooks: List[Tuple[BeforeHook, Optional[Rule]]],
+        hooks: list[tuple[BeforeHook, Rule | None]],
         call_input: CallInput,
         context: CallContext,
     ) -> None:
@@ -121,7 +122,7 @@ class HookExecutor(Protocol):
 
     async def execute_after(
         self,
-        hooks: List[Tuple[AfterHook, Optional[Rule]]],
+        hooks: list[tuple[AfterHook, Rule | None]],
         call_input: CallInput,
         call_output: CallOutput,
         context: CallContext,
@@ -131,7 +132,7 @@ class HookExecutor(Protocol):
 
     async def execute_error(
         self,
-        hooks: List[Tuple[ErrorHook, Optional[Rule]]],
+        hooks: list[tuple[ErrorHook, Rule | None]],
         call_input: CallInput,
         error: BaseException,
         context: CallContext,
@@ -140,7 +141,7 @@ class HookExecutor(Protocol):
         ...
 
     async def execute_finally(
-        self, hooks: List[Tuple[FinallyHook, Optional[Rule]]], result: CallResult
+        self, hooks: list[tuple[FinallyHook, Rule | None]], result: CallResult
     ) -> None:
         """Execute finally hooks."""
         ...

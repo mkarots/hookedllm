@@ -6,9 +6,10 @@ These types represent the data that flows through the hook system.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any
 from uuid import uuid4
 
 
@@ -30,8 +31,8 @@ class CallInput:
 
     model: str
     messages: Sequence[Message]
-    params: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    params: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -43,10 +44,10 @@ class CallOutput:
     preserving the original response object.
     """
 
-    text: Optional[str]
+    text: str | None
     raw: Any  # Original SDK response object
-    usage: Optional[Dict[str, Any]] = None
-    finish_reason: Optional[str] = None
+    usage: dict[str, Any] | None = None
+    finish_reason: str | None = None
 
 
 @dataclass
@@ -58,13 +59,13 @@ class CallContext:
     """
 
     call_id: str = field(default_factory=lambda: str(uuid4()))
-    parent_id: Optional[str] = None
+    parent_id: str | None = None
     provider: str = ""
     model: str = ""
     route: str = "chat"
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -77,8 +78,8 @@ class CallResult:
     """
 
     input: CallInput
-    output: Optional[CallOutput]
+    output: CallOutput | None
     context: CallContext
-    error: Optional[BaseException]
+    error: BaseException | None
     ended_at: datetime
     elapsed_ms: float

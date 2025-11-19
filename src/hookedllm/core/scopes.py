@@ -7,9 +7,7 @@ preventing interference across different application contexts.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
-
-from .protocols import AfterHook, BeforeHook, ErrorHook, FinallyHook, Rule, ScopeHookStore
+from .protocols import AfterHook, BeforeHook, ErrorHook, FinallyHook, Rule
 
 
 class InMemoryScopeHookStore:
@@ -22,62 +20,62 @@ class InMemoryScopeHookStore:
 
     def __init__(self, scope_name: str):
         self._scope_name = scope_name
-        self._before: List[Tuple[BeforeHook, Optional[Rule]]] = []
-        self._after: List[Tuple[AfterHook, Optional[Rule]]] = []
-        self._error: List[Tuple[ErrorHook, Optional[Rule]]] = []
-        self._finally: List[Tuple[FinallyHook, Optional[Rule]]] = []
+        self._before: list[tuple[BeforeHook, Rule | None]] = []
+        self._after: list[tuple[AfterHook, Rule | None]] = []
+        self._error: list[tuple[ErrorHook, Rule | None]] = []
+        self._finally: list[tuple[FinallyHook, Rule | None]] = []
 
     @property
     def name(self) -> str:
         """Get the scope name."""
         return self._scope_name
 
-    def add_before(self, hook: BeforeHook, rule: Optional[Rule] = None) -> None:
+    def add_before(self, hook: BeforeHook, rule: Rule | None = None) -> None:
         """Add a before hook with optional execution rule."""
         self._before.append((hook, rule))
 
-    def add_after(self, hook: AfterHook, rule: Optional[Rule] = None) -> None:
+    def add_after(self, hook: AfterHook, rule: Rule | None = None) -> None:
         """Add an after hook with optional execution rule."""
         self._after.append((hook, rule))
 
-    def add_error(self, hook: ErrorHook, rule: Optional[Rule] = None) -> None:
+    def add_error(self, hook: ErrorHook, rule: Rule | None = None) -> None:
         """Add an error hook with optional execution rule."""
         self._error.append((hook, rule))
 
-    def add_finally(self, hook: FinallyHook, rule: Optional[Rule] = None) -> None:
+    def add_finally(self, hook: FinallyHook, rule: Rule | None = None) -> None:
         """Add a finally hook with optional execution rule."""
         self._finally.append((hook, rule))
 
-    def get_before_hooks(self) -> List[Tuple[BeforeHook, Optional[Rule]]]:
+    def get_before_hooks(self) -> list[tuple[BeforeHook, Rule | None]]:
         """Get all before hooks with their rules (returns copy)."""
         return self._before.copy()
 
-    def get_after_hooks(self) -> List[Tuple[AfterHook, Optional[Rule]]]:
+    def get_after_hooks(self) -> list[tuple[AfterHook, Rule | None]]:
         """Get all after hooks with their rules (returns copy)."""
         return self._after.copy()
 
-    def get_error_hooks(self) -> List[Tuple[ErrorHook, Optional[Rule]]]:
+    def get_error_hooks(self) -> list[tuple[ErrorHook, Rule | None]]:
         """Get all error hooks with their rules (returns copy)."""
         return self._error.copy()
 
-    def get_finally_hooks(self) -> List[Tuple[FinallyHook, Optional[Rule]]]:
+    def get_finally_hooks(self) -> list[tuple[FinallyHook, Rule | None]]:
         """Get all finally hooks with their rules (returns copy)."""
         return self._finally.copy()
 
     # Convenience methods that mirror the add_* interface
-    def before(self, hook: BeforeHook, *, when: Optional[Rule] = None) -> None:
+    def before(self, hook: BeforeHook, *, when: Rule | None = None) -> None:
         """Alias for add_before with keyword 'when' parameter."""
         self.add_before(hook, when)
 
-    def after(self, hook: AfterHook, *, when: Optional[Rule] = None) -> None:
+    def after(self, hook: AfterHook, *, when: Rule | None = None) -> None:
         """Alias for add_after with keyword 'when' parameter."""
         self.add_after(hook, when)
 
-    def error(self, hook: ErrorHook, *, when: Optional[Rule] = None) -> None:
+    def error(self, hook: ErrorHook, *, when: Rule | None = None) -> None:
         """Alias for add_error with keyword 'when' parameter."""
         self.add_error(hook, when)
 
-    def finally_(self, hook: FinallyHook, *, when: Optional[Rule] = None) -> None:
+    def finally_(self, hook: FinallyHook, *, when: Rule | None = None) -> None:
         """Alias for add_finally with keyword 'when' parameter."""
         self.add_finally(hook, when)
 
@@ -91,7 +89,7 @@ class InMemoryScopeRegistry:
     """
 
     def __init__(self):
-        self._scopes: Dict[str, InMemoryScopeHookStore] = {}
+        self._scopes: dict[str, InMemoryScopeHookStore] = {}
         self._global = InMemoryScopeHookStore("__global__")
 
     def get_scope(self, name: str) -> InMemoryScopeHookStore:
@@ -118,8 +116,8 @@ class InMemoryScopeRegistry:
         return self._global
 
     def get_scopes_for_client(
-        self, scope_names: Optional[List[str]] = None
-    ) -> List[InMemoryScopeHookStore]:
+        self, scope_names: list[str] | None = None
+    ) -> list[InMemoryScopeHookStore]:
         """
         Get list of scopes for a client.
 

@@ -7,7 +7,7 @@ Provides a helper for evaluating LLM responses using another LLM.
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Optional
+from typing import Any
 
 from ..core.types import CallContext, CallInput, CallOutput
 
@@ -36,7 +36,7 @@ class EvaluationHook:
     def __init__(
         self,
         evaluator_client: Any,
-        criteria: Dict[str, str],
+        criteria: dict[str, str],
         model: str = "gpt-4o-mini",
         store_in_metadata: bool = True,
     ):

@@ -7,8 +7,9 @@ Supports composition via AND, OR, NOT operations.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Literal
+from typing import Any, Literal
 
 from .types import CallContext, CallInput
 
@@ -17,7 +18,7 @@ from .types import CallContext, CallInput
 class ModelRule:
     """Match specific model(s)."""
 
-    models: List[str]
+    models: list[str]
 
     def matches(self, call_input: CallInput, context: CallContext) -> bool:
         return call_input.model in self.models
@@ -36,7 +37,7 @@ class ModelRule:
 class TagRule:
     """Match if context has specific tag(s)."""
 
-    tags: List[str]
+    tags: list[str]
     require_all: bool = False
 
     def matches(self, call_input: CallInput, context: CallContext) -> bool:
@@ -58,7 +59,7 @@ class TagRule:
 class MetadataRule:
     """Match based on metadata key-value pairs."""
 
-    conditions: Dict[str, Any]
+    conditions: dict[str, Any]
 
     def matches(self, call_input: CallInput, context: CallContext) -> bool:
         for key, value in self.conditions.items():
@@ -99,7 +100,7 @@ class CustomRule:
 class CompositeRule:
     """Combine multiple rules with AND/OR logic."""
 
-    rules: List[Any]  # List of any rule type
+    rules: list[Any]  # List of any rule type
     operator: Literal["and", "or"]
 
     def matches(self, call_input: CallInput, context: CallContext) -> bool:

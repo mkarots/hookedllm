@@ -8,10 +8,10 @@ from __future__ import annotations
 
 from importlib import import_module
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
-def load_config(path: str, context: Optional[Any] = None) -> None:
+def load_config(path: str, context: Any | None = None) -> None:
     """
     Load hooks from a YAML configuration file.
 
@@ -136,7 +136,7 @@ def _import_hook(config: dict) -> Any:
         raise ValueError("Hook config must specify either 'function' or 'class_name'")
 
 
-def _build_rule_from_config(when_config: Optional[dict]) -> Optional[Any]:
+def _build_rule_from_config(when_config: dict | None) -> Any | None:
     """
     Build a rule from YAML when configuration.
 

@@ -54,7 +54,7 @@ class HookedLLMContext:
     """
 
     def __init__(
-        self, registry: Optional[ScopeRegistry] = None, executor: Optional[HookExecutor] = None
+        self, registry: ScopeRegistry | None = None, executor: HookExecutor | None = None
     ):
         """
         Initialize context with optional dependency injection.
@@ -68,7 +68,7 @@ class HookedLLMContext:
         self.executor = executor or DefaultHookExecutor()
 
     def wrap(
-        self, client: Any, scope: Optional[Union[str, List[str]]] = None
+        self, client: Any, scope: str | list[str] | None = None
     ) -> HookedClientWrapper:
         """
         Wrap a client using this context's dependencies.
@@ -122,19 +122,19 @@ class HookedLLMContext:
         return self.registry.get_global_scope()
 
     # Convenience methods for global scope
-    def before(self, hook: BeforeHook, *, when: Optional[Rule] = None) -> None:
+    def before(self, hook: BeforeHook, *, when: Rule | None = None) -> None:
         """Register a global before hook."""
         self.global_scope().add_before(hook, when)
 
-    def after(self, hook: AfterHook, *, when: Optional[Rule] = None) -> None:
+    def after(self, hook: AfterHook, *, when: Rule | None = None) -> None:
         """Register a global after hook."""
         self.global_scope().add_after(hook, when)
 
-    def error(self, hook: ErrorHook, *, when: Optional[Rule] = None) -> None:
+    def error(self, hook: ErrorHook, *, when: Rule | None = None) -> None:
         """Register a global error hook."""
         self.global_scope().add_error(hook, when)
 
-    def finally_(self, hook: FinallyHook, *, when: Optional[Rule] = None) -> None:
+    def finally_(self, hook: FinallyHook, *, when: Rule | None = None) -> None:
         """Register a global finally hook."""
         self.global_scope().add_finally(hook, when)
 
@@ -150,7 +150,7 @@ _default_context = HookedLLMContext()
 when = RuleBuilder()
 
 
-def wrap(client: Any, scope: Optional[Union[str, List[str]]] = None) -> HookedClientWrapper:
+def wrap(client: Any, scope: str | list[str] | None = None) -> HookedClientWrapper:
     """
     Wrap a client with hook support (uses default context).
 
@@ -184,7 +184,7 @@ def scope(name: str):
     return _default_context.scope(name)
 
 
-def before(hook: BeforeHook, *, when: Optional[Rule] = None) -> None:
+def before(hook: BeforeHook, *, when: Rule | None = None) -> None:
     """
     Register a global before hook (uses default context).
 
@@ -198,7 +198,7 @@ def before(hook: BeforeHook, *, when: Optional[Rule] = None) -> None:
     _default_context.before(hook, when=when)
 
 
-def after(hook: AfterHook, *, when: Optional[Rule] = None) -> None:
+def after(hook: AfterHook, *, when: Rule | None = None) -> None:
     """
     Register a global after hook (uses default context).
 
@@ -212,7 +212,7 @@ def after(hook: AfterHook, *, when: Optional[Rule] = None) -> None:
     _default_context.after(hook, when=when)
 
 
-def error(hook: ErrorHook, *, when: Optional[Rule] = None) -> None:
+def error(hook: ErrorHook, *, when: Rule | None = None) -> None:
     """
     Register a global error hook (uses default context).
 
@@ -226,7 +226,7 @@ def error(hook: ErrorHook, *, when: Optional[Rule] = None) -> None:
     _default_context.error(hook, when=when)
 
 
-def finally_(hook: FinallyHook, *, when: Optional[Rule] = None) -> None:
+def finally_(hook: FinallyHook, *, when: Rule | None = None) -> None:
     """
     Register a global finally hook (uses default context).
 
@@ -241,7 +241,7 @@ def finally_(hook: FinallyHook, *, when: Optional[Rule] = None) -> None:
 
 
 def create_context(
-    registry: Optional[ScopeRegistry] = None, executor: Optional[HookExecutor] = None
+    registry: ScopeRegistry | None = None, executor: HookExecutor | None = None
 ) -> HookedLLMContext:
     """
     Create a custom context with injected dependencies.
@@ -268,10 +268,6 @@ def create_context(
 
 
 # Export commonly used types and implementations for advanced users
-from .core import (
-    DefaultHookExecutor,
-    InMemoryScopeRegistry,
-)
 
 # Config loader (optional - requires pyyaml)
 try:

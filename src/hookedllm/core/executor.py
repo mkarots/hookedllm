@@ -6,7 +6,8 @@ Executes hooks with rule matching while isolating failures.
 
 from __future__ import annotations
 
-from typing import Any, Callable, List, Optional, Tuple
+from collections.abc import Callable
+from typing import Any
 
 from .protocols import AfterHook, BeforeHook, ErrorHook, FinallyHook, Rule
 from .types import CallContext, CallInput, CallOutput, CallResult
@@ -27,8 +28,8 @@ class DefaultHookExecutor:
 
     def __init__(
         self,
-        error_handler: Optional[Callable[[Exception, str], None]] = None,
-        logger: Optional[Any] = None,
+        error_handler: Callable[[Exception, str], None] | None = None,
+        logger: Any | None = None,
     ):
         """
         Initialize executor with optional dependencies.
@@ -42,7 +43,7 @@ class DefaultHookExecutor:
 
     async def execute_before(
         self,
-        hooks: List[Tuple[BeforeHook, Optional[Rule]]],
+        hooks: list[tuple[BeforeHook, Rule | None]],
         call_input: CallInput,
         context: CallContext,
     ) -> None:
@@ -67,7 +68,7 @@ class DefaultHookExecutor:
 
     async def execute_after(
         self,
-        hooks: List[Tuple[AfterHook, Optional[Rule]]],
+        hooks: list[tuple[AfterHook, Rule | None]],
         call_input: CallInput,
         call_output: CallOutput,
         context: CallContext,
@@ -94,7 +95,7 @@ class DefaultHookExecutor:
 
     async def execute_error(
         self,
-        hooks: List[Tuple[ErrorHook, Optional[Rule]]],
+        hooks: list[tuple[ErrorHook, Rule | None]],
         call_input: CallInput,
         error: BaseException,
         context: CallContext,
@@ -120,7 +121,7 @@ class DefaultHookExecutor:
                         self._logger.error(f"Error hook {hook_name} failed: {e}")
 
     async def execute_finally(
-        self, hooks: List[Tuple[FinallyHook, Optional[Rule]]], result: CallResult
+        self, hooks: list[tuple[FinallyHook, Rule | None]], result: CallResult
     ) -> None:
         """
         Execute finally hooks.

@@ -6,7 +6,7 @@ Tracks token usage, call counts, and error rates across LLM calls.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from ..core.types import CallResult
 
@@ -29,7 +29,7 @@ class MetricsHook:
         print(metrics.stats)
     """
 
-    def __init__(self, stats: Optional[Dict[str, Any]] = None):
+    def __init__(self, stats: dict[str, Any] | None = None):
         """
         Initialize metrics hook.
 
@@ -100,7 +100,7 @@ class MetricsHook:
         for key in self.stats:
             self.stats[key] = 0 if isinstance(self.stats[key], int) else 0.0
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         """
         Get a summary of metrics including calculated values.
 

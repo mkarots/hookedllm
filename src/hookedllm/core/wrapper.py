@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import time
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any
 
 from .protocols import HookExecutor, ScopeHookStore
 from .types import CallContext, CallInput, CallOutput, CallResult, Message
@@ -23,7 +23,7 @@ class HookedClientWrapper:
     Intercepts OpenAI SDK methods to inject hook execution.
     """
 
-    def __init__(self, original_client: Any, scopes: List[ScopeHookStore], executor: HookExecutor):
+    def __init__(self, original_client: Any, scopes: list[ScopeHookStore], executor: HookExecutor):
         """
         Initialize wrapper with injected dependencies.
 
@@ -53,7 +53,7 @@ class HookedClientWrapper:
 class HookedChatWrapper:
     """Wraps chat completions with injected dependencies."""
 
-    def __init__(self, original_chat: Any, scopes: List[ScopeHookStore], executor: HookExecutor):
+    def __init__(self, original_chat: Any, scopes: list[ScopeHookStore], executor: HookExecutor):
         """
         Initialize chat wrapper.
 
@@ -88,7 +88,7 @@ class HookedCompletionsWrapper:
     """
 
     def __init__(
-        self, original_completions: Any, scopes: List[ScopeHookStore], executor: HookExecutor
+        self, original_completions: Any, scopes: list[ScopeHookStore], executor: HookExecutor
     ):
         """
         Initialize completions wrapper.
@@ -102,7 +102,7 @@ class HookedCompletionsWrapper:
         self._scopes = scopes
         self._executor = executor
 
-    async def create(self, *, model: str, messages: List[Dict], **kwargs) -> Any:
+    async def create(self, *, model: str, messages: list[dict], **kwargs) -> Any:
         """
         Hooked create method.
 
