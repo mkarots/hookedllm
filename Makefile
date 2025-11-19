@@ -2,7 +2,7 @@
 
 # Variables
 PYTHON := python3
-PIP := pip
+PIP := pip3
 UV := uv
 VENV := .venv
 BUILD_ENV := build-env
