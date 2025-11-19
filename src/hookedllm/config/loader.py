@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from importlib import import_module
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
+
+from hookedllm.core.protocols import Rule
 
 
 def load_config(path: str, context: Any | None = None) -> None:
@@ -158,7 +160,9 @@ def _build_rule_from_config(when_config: dict | None) -> Any | None:
         return when.always()
 
     # Build individual rules
-    rules = []
+    # Note: Using Any here because concrete rule types don't perfectly match
+    # the Rule Protocol due to variance in __and__/__or__ return types
+    rules: list[Any] = []
 
     # Model rule
     if "model" in when_config:
@@ -180,10 +184,10 @@ def _build_rule_from_config(when_config: dict | None) -> Any | None:
     if len(rules) == 0:
         return None
     elif len(rules) == 1:
-        return rules[0]
+        return cast(Rule, rules[0])
     else:
         # Compose with & operator
-        result = rules[0]
+        result: Any = rules[0]
         for r in rules[1:]:
             result = result & r
-        return result
+        return cast(Rule, result)

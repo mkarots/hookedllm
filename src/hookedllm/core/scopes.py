@@ -7,7 +7,7 @@ preventing interference across different application contexts.
 
 from __future__ import annotations
 
-from .protocols import AfterHook, BeforeHook, ErrorHook, FinallyHook, Rule
+from .protocols import AfterHook, BeforeHook, ErrorHook, FinallyHook, Rule, ScopeHookStore
 
 
 class InMemoryScopeHookStore:
@@ -115,9 +115,7 @@ class InMemoryScopeRegistry:
         """
         return self._global
 
-    def get_scopes_for_client(
-        self, scope_names: list[str] | None = None
-    ) -> list[InMemoryScopeHookStore]:
+    def get_scopes_for_client(self, scope_names: list[str] | None = None) -> list[ScopeHookStore]:
         """
         Get list of scopes for a client.
 
@@ -129,7 +127,7 @@ class InMemoryScopeRegistry:
         Returns:
             List of scope hook stores (global + requested scopes)
         """
-        scopes = [self._global]  # Always include global
+        scopes: list[ScopeHookStore] = [self._global]  # Always include global
 
         if scope_names:
             for name in scope_names:
