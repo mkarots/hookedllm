@@ -5,7 +5,6 @@ These tests demonstrate that the core system works without requiring
 actual LLM API calls.
 """
 
-
 import pytest
 
 from hookedllm.core.executor import DefaultHookExecutor
