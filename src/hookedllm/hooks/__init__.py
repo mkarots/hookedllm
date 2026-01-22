@@ -2,8 +2,8 @@
 Built-in hook helpers for common use cases.
 """
 
-from .metrics import MetricsHook
 from .evaluation import EvaluationHook
+from .metrics import MetricsHook
 
 __all__ = [
     "MetricsHook",

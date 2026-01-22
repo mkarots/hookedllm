@@ -4,6 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Documentation](https://img.shields.io/badge/docs-latest-blue)](https://cepstrumlabs.github.io/hookedllm/)
 
 HookedLLM provides transparent observability for LLM calls through a powerful hook system. Add evaluation, logging, metrics, and custom behaviors to your LLM applications without modifying core application logic.
 
@@ -376,11 +377,15 @@ response = await client.chat.completions.create(
 
 ## 🤝 Contributing
 
-Contributions welcome! Please see our contributing guidelines.
+Contributions welcome! Please see our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## 🔒 Security
+
+Please see [SECURITY.md](SECURITY.md) for security policy and reporting vulnerabilities.
 
 ## 🙏 Acknowledgments
 

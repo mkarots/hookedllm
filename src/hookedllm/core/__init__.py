@@ -4,28 +4,28 @@ Core module for hookedllm.
 Contains the fundamental types, protocols, and implementations.
 """
 
-from .types import Message, CallInput, CallOutput, CallContext, CallResult
+from .executor import DefaultHookExecutor
 from .protocols import (
-    BeforeHook,
     AfterHook,
+    BeforeHook,
     ErrorHook,
     FinallyHook,
+    HookExecutor,
     Rule,
     ScopeHookStore,
     ScopeRegistry,
-    HookExecutor,
 )
 from .rules import (
-    ModelRule,
-    TagRule,
-    MetadataRule,
-    CustomRule,
     CompositeRule,
+    CustomRule,
+    MetadataRule,
+    ModelRule,
     NotRule,
     RuleBuilder,
+    TagRule,
 )
 from .scopes import InMemoryScopeHookStore, InMemoryScopeRegistry
-from .executor import DefaultHookExecutor
+from .types import CallContext, CallInput, CallOutput, CallResult, Message
 from .wrapper import HookedClientWrapper
 
 __all__ = [

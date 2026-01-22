@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hookedllm"
-version = "0.0.2"
-description = "Async-first, scoped hook system for LLM observability with SOLID/DI architecture"
+version = "0.1.1"
+description = "Async-first, scoped hook system for LLM observability"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -54,13 +54,22 @@ dev = [
     "black>=23.0.0",
     "ruff>=0.1.0",
     "isort>=5.12.0",
+    "types-pyyaml>=6.0.12.20250915",
+]
+
+# Documentation dependencies
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.23.0",
+    "mkdocs-gen-files>=0.5.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourorg/hookedllm"
-Documentation = "https://hookedllm.readthedocs.io"
-Repository = "https://github.com/yourorg/hookedllm"
-Issues = "https://github.com/yourorg/hookedllm/issues"
+Homepage = "https://github.com/CepstrumLabs/hookedllm"
+Documentation = "https://cepstrumlabs.github.io/hookedllm/"
+Repository = "https://github.com/CepstrumLabs/hookedllm"
+Issues = "https://github.com/CepstrumLabs/hookedllm/issues"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
