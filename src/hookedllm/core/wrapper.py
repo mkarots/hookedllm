@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import time
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Type
 
 from .protocols import HookExecutor, ScopeHookStore
 from .types import CallResult
@@ -37,7 +37,7 @@ def _detect_provider_adapter(client: Any) -> Any:
         # This allows the package to work even if optional deps aren't installed
         pass
 
-    adapters = []
+    adapters: list[Type[Any]] = []
     # Check Anthropic first (more specific structure)
     try:
         from ..providers.anthropic import AnthropicAdapter
