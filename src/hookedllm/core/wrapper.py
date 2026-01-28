@@ -1,7 +1,7 @@
 """
 Transparent wrapper for intercepting LLM API calls.
 
-Wraps OpenAI-compatible clients to inject hook execution while preserving
+Wraps provider clients to inject hook execution while preserving
 the original SDK interface and return types.
 """
 
@@ -12,7 +12,59 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .protocols import HookExecutor, ScopeHookStore
-from .types import CallContext, CallInput, CallOutput, CallResult, Message
+from .types import CallResult
+
+
+def _detect_provider_adapter(client: Any) -> Any:
+    """
+    Detect which provider adapter to use for a client.
+
+    Args:
+        client: The client instance to detect
+
+    Returns:
+        ProviderAdapter instance or None if no adapter matches
+
+    Raises:
+        ValueError: If no adapter can handle the client
+    """
+    # Import adapters here to avoid circular imports
+    try:
+        from ..providers.anthropic import AnthropicAdapter
+        from ..providers.openai import OpenAIAdapter
+    except ImportError:
+        # If adapters aren't available, fall back to OpenAI detection
+        # This allows the package to work even if optional deps aren't installed
+        pass
+
+    adapters: list[type[Any]] = []
+    # Check Anthropic first (more specific structure)
+    try:
+        from ..providers.anthropic import AnthropicAdapter
+
+        adapters.append(AnthropicAdapter)
+    except ImportError:
+        pass
+
+    # Then check OpenAI
+    try:
+        from ..providers.openai import OpenAIAdapter
+
+        adapters.append(OpenAIAdapter)
+    except ImportError:
+        pass
+
+    # Try each adapter
+    for adapter in adapters:
+        if adapter.detect(client):
+            return adapter
+
+    # If no adapter matches, raise an error
+    raise ValueError(
+        f"Unsupported client type: {type(client)}. "
+        "Supported providers: OpenAI, Anthropic. "
+        "Install with: pip install hookedllm[openai] or pip install hookedllm[anthropic]"
+    )
 
 
 class HookedClientWrapper:
@@ -20,7 +72,7 @@ class HookedClientWrapper:
     Transparent proxy with all dependencies injected.
 
     No global state - all dependencies passed via constructor (DI).
-    Intercepts OpenAI SDK methods to inject hook execution.
+    Intercepts provider SDK methods to inject hook execution.
     """
 
     def __init__(self, original_client: Any, scopes: list[ScopeHookStore], executor: HookExecutor):
@@ -28,54 +80,107 @@ class HookedClientWrapper:
         Initialize wrapper with injected dependencies.
 
         Args:
-            original_client: The original OpenAI-compatible client
+            original_client: The original provider client
             scopes: List of scope hook stores to use
             executor: Hook executor instance
         """
         self._original = original_client
         self._scopes = scopes
         self._executor = executor
+        self._adapter = _detect_provider_adapter(original_client)
+        self._wrapper_path = self._adapter.get_wrapper_path(original_client)
 
     def __getattr__(self, name: str) -> Any:
         """
         Intercept attribute access.
 
-        If accessing 'chat', wrap it. Otherwise pass through.
+        Wraps attributes based on the detected provider's wrapper path.
         """
         attr = getattr(self._original, name)
 
-        if name == "chat":
-            return HookedChatWrapper(attr, self._scopes, self._executor)
+        # Check if this attribute is part of the wrapper path
+        if len(self._wrapper_path) > 0 and name == self._wrapper_path[0]:
+            # Create a dynamic wrapper for the next level
+            return _create_wrapper_for_path(
+                attr, self._wrapper_path[1:], self._scopes, self._executor, self._adapter
+            )
 
         return attr
 
 
-class HookedChatWrapper:
-    """Wraps chat completions with injected dependencies."""
+def _create_wrapper_for_path(
+    obj: Any,
+    remaining_path: list[str],
+    scopes: list[ScopeHookStore],
+    executor: HookExecutor,
+    adapter: Any,
+) -> Any:
+    """
+    Recursively create wrappers for the provider's attribute path.
 
-    def __init__(self, original_chat: Any, scopes: list[ScopeHookStore], executor: HookExecutor):
+    Args:
+        obj: The object to wrap
+        remaining_path: Remaining attribute names in the path
+        scopes: List of scope hook stores
+        executor: Hook executor instance
+        adapter: Provider adapter instance
+
+    Returns:
+        Wrapped object or the original object if path is complete
+    """
+    if len(remaining_path) == 0:
+        # We've reached the end of the path - create the final wrapper
+        return HookedCompletionsWrapper(obj, scopes, executor, adapter)
+
+    # Create an intermediate wrapper
+    return HookedPathWrapper(obj, remaining_path, scopes, executor, adapter)
+
+
+class HookedPathWrapper:
+    """
+    Intermediate wrapper for provider-specific attribute paths.
+
+    Handles paths like ["chat", "completions"] for OpenAI or ["messages"] for Anthropic.
+    """
+
+    def __init__(
+        self,
+        original_obj: Any,
+        remaining_path: list[str],
+        scopes: list[ScopeHookStore],
+        executor: HookExecutor,
+        adapter: Any,
+    ):
         """
-        Initialize chat wrapper.
+        Initialize path wrapper.
 
         Args:
-            original_chat: Original chat object from SDK
+            original_obj: The object being wrapped
+            remaining_path: Remaining attribute names to intercept
             scopes: List of scope hook stores
             executor: Hook executor instance
+            adapter: Provider adapter instance
         """
-        self._original = original_chat
+        self._original = original_obj
+        self._remaining_path = remaining_path
         self._scopes = scopes
         self._executor = executor
+        self._adapter = adapter
 
     def __getattr__(self, name: str) -> Any:
         """
         Intercept attribute access.
 
-        If accessing 'completions', wrap it. Otherwise pass through.
+        If the attribute matches the next in the path, wrap it.
+        Otherwise pass through.
         """
         attr = getattr(self._original, name)
 
-        if name == "completions":
-            return HookedCompletionsWrapper(attr, self._scopes, self._executor)
+        if len(self._remaining_path) > 0 and name == self._remaining_path[0]:
+            # Continue wrapping down the path
+            return _create_wrapper_for_path(
+                attr, self._remaining_path[1:], self._scopes, self._executor, self._adapter
+            )
 
         return attr
 
@@ -88,7 +193,11 @@ class HookedCompletionsWrapper:
     """
 
     def __init__(
-        self, original_completions: Any, scopes: list[ScopeHookStore], executor: HookExecutor
+        self,
+        original_completions: Any,
+        scopes: list[ScopeHookStore],
+        executor: HookExecutor,
+        adapter: Any,
     ):
         """
         Initialize completions wrapper.
@@ -97,21 +206,23 @@ class HookedCompletionsWrapper:
             original_completions: Original completions object from SDK
             scopes: List of scope hook stores
             executor: Hook executor instance
+            adapter: Provider adapter instance
         """
         self._original = original_completions
         self._scopes = scopes
         self._executor = executor
+        self._adapter = adapter
 
     async def create(self, *, model: str, messages: list[dict], **kwargs) -> Any:
         """
         Hooked create method.
 
         Flow:
-        1. Extract hookedllm-specific parameters (tags, metadata)
-        2. Create normalized CallInput and CallContext
-        3. Collect all hooks from all scopes
-        4. Execute before hooks
-        5. Call original SDK method
+        1. Use adapter to normalize input (extracts tags, metadata, creates CallInput/Context)
+        2. Collect all hooks from all scopes
+        3. Execute before hooks
+        4. Call original SDK method
+        5. Use adapter to normalize output
         6. Execute after hooks (on success) or error hooks (on failure)
         7. Always execute finally hooks
         8. Return original SDK response type
@@ -124,27 +235,14 @@ class HookedCompletionsWrapper:
         Returns:
             Original SDK response object
         """
-        # Extract hookedllm-specific params from extra_body
-        extra_body = kwargs.get("extra_body", {})
-        if isinstance(extra_body, dict):
-            tags = extra_body.pop("hookedllm_tags", [])
-            metadata = extra_body.pop("hookedllm_metadata", {})
-        else:
-            tags = []
-            metadata = {}
-
-        # Normalize messages to internal format
-        normalized_messages = [
-            Message(role=m.get("role", ""), content=m.get("content", "")) for m in messages
-        ]
-
-        # Create normalized input
-        call_input = CallInput(
-            model=model, messages=normalized_messages, params=kwargs, metadata=metadata
+        # Use adapter to normalize input
+        call_input, context = self._adapter.normalize_input(
+            self._adapter.PROVIDER_NAME,
+            self._original.create,
+            model=model,
+            messages=messages,
+            **kwargs,
         )
-
-        # Create context
-        context = CallContext(provider="openai", model=model, tags=tags, metadata=metadata)
 
         # Collect all hooks from all scopes
         all_before = []
@@ -170,8 +268,8 @@ class HookedCompletionsWrapper:
             # Original SDK call
             response = await self._original.create(model=model, messages=messages, **kwargs)
 
-            # Normalize output
-            output = self._normalize_output(response)
+            # Use adapter to normalize output
+            output = self._adapter.normalize_output(response)
 
             # After hooks
             await self._executor.execute_after(all_after, call_input, output, context)
@@ -194,46 +292,6 @@ class HookedCompletionsWrapper:
                 elapsed_ms=elapsed,
             )
             await self._executor.execute_finally(all_finally, result)
-
-    def _normalize_output(self, response: Any) -> CallOutput:
-        """
-        Normalize provider response to CallOutput.
-
-        Args:
-            response: Original SDK response
-
-        Returns:
-            Normalized CallOutput
-        """
-        try:
-            # Extract text from response
-            text = None
-            if hasattr(response, "choices") and len(response.choices) > 0:
-                choice = response.choices[0]
-                if hasattr(choice, "message"):
-                    text = getattr(choice.message, "content", None)
-
-            # Extract usage
-            usage = None
-            if hasattr(response, "usage"):
-                # Try to convert to dict
-                usage_obj = response.usage
-                if hasattr(usage_obj, "model_dump"):
-                    usage = usage_obj.model_dump()
-                elif hasattr(usage_obj, "dict"):
-                    usage = usage_obj.dict()
-                elif hasattr(usage_obj, "__dict__"):
-                    usage = dict(usage_obj.__dict__)
-
-            # Extract finish_reason
-            finish_reason = None
-            if hasattr(response, "choices") and len(response.choices) > 0:
-                finish_reason = getattr(response.choices[0], "finish_reason", None)
-
-            return CallOutput(text=text, raw=response, usage=usage, finish_reason=finish_reason)
-        except Exception:
-            # If normalization fails, return minimal output with raw response
-            return CallOutput(text=None, raw=response, usage=None, finish_reason=None)
 
     def __getattr__(self, name: str) -> Any:
         """Pass through other attributes to original object."""

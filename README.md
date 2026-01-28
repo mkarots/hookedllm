@@ -30,12 +30,19 @@ pip install hookedllm
 # With OpenAI support
 pip install hookedllm[openai]
 
-# With all optional dependencies
+# With Anthropic/Claude support
+pip install hookedllm[anthropic]
+
+# With both OpenAI and Anthropic support
+pip install hookedllm[openai,anthropic]
+
+# With all optional dependencies (OpenAI, Anthropic, config support)
 pip install hookedllm[all]
 ```
 
 ### Basic Usage
 
+**With OpenAI:**
 ```python
 import hookedllm
 from openai import AsyncOpenAI
@@ -55,6 +62,33 @@ client = hookedllm.wrap(AsyncOpenAI(), scope="evaluation")
 response = await client.chat.completions.create(
     model="gpt-4o-mini",
     messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+**With Anthropic/Claude:**
+```python
+import hookedllm
+from anthropic import AsyncAnthropic
+
+# Same hook works for both providers!
+async def log_usage(call_input, call_output, context):
+    print(f"Provider: {context.provider}, Model: {call_input.model}")
+    if call_output.usage:
+        total = call_output.usage.get("total_tokens", 0)
+        print(f"Tokens: {total}")
+
+# Register hook
+hookedllm.scope("evaluation").after(log_usage)
+
+# Wrap Anthropic client - automatic provider detection!
+client = hookedllm.wrap(AsyncAnthropic(), scope="evaluation")
+
+# Use normally - hooks execute automatically!
+response = await client.messages.create(
+    model="claude-3-haiku-20240307",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": "Hello!"}],
+    metadata={"hookedllm_tags": ["example"]}  # Note: Anthropic uses metadata, not extra_body
 )
 ```
 
@@ -113,12 +147,20 @@ Explore the [`examples/`](examples/) directory for complete, runnable demonstrat
 # Install with OpenAI support
 pip install -e .[openai]
 
-# Set your API key
+# Or install with Anthropic support
+pip install -e .[anthropic]
+
+# Or install with both
+pip install -e .[openai,anthropic]
+
+# Set your API keys
 export OPENAI_API_KEY=your-key-here
+export ANTHROPIC_API_KEY=your-key-here
 
 # Run any example
 python examples/simple_demo.py
 python examples/scopes_demo.py
+python examples/anthropic_simple_example.py  # Anthropic example
 python examples/integrations/langfuse_integration.py
 ```
 
@@ -361,11 +403,27 @@ hookedllm.finally_(track_metrics)
 
 Pass tags and metadata to enable conditional hooks:
 
+**OpenAI** (uses `extra_body`):
 ```python
 response = await client.chat.completions.create(
     model="gpt-4",
     messages=[...],
     extra_body={
+        "hookedllm_tags": ["production", "critical"],
+        "hookedllm_metadata": {
+            "user_id": "abc123",
+            "user_tier": "premium"
+        }
+    }
+)
+```
+
+**Anthropic** (uses `metadata`):
+```python
+response = await client.messages.create(
+    model="claude-3-haiku-20240307",
+    messages=[...],
+    metadata={
         "hookedllm_tags": ["production", "critical"],
         "hookedllm_metadata": {
             "user_id": "abc123",
