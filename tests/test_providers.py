@@ -4,8 +4,9 @@ Tests for provider adapters.
 Tests the provider adapter pattern for multi-provider support.
 """
 
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 from hookedllm.core.types import CallContext, CallInput, Message
 
@@ -27,7 +28,7 @@ class TestOpenAIAdapter:
                 self.chat = MagicMock()
                 self.chat.completions = MagicMock()
                 self.chat.completions.create = lambda: None  # Make it callable
-        
+
         mock_client = MockOpenAIClient()
         # messages attribute doesn't exist - accessing it will raise AttributeError
 
@@ -62,9 +63,7 @@ class TestOpenAIAdapter:
             "extra_body": {"hookedllm_tags": ["test"], "hookedllm_metadata": {"key": "value"}},
         }
 
-        call_input, context = OpenAIAdapter.normalize_input(
-            "openai", None, **kwargs
-        )
+        call_input, context = OpenAIAdapter.normalize_input("openai", None, **kwargs)
 
         assert call_input.model == "gpt-4"
         assert len(call_input.messages) == 1
@@ -165,9 +164,7 @@ class TestAnthropicAdapter:
             "metadata": {"hookedllm_tags": ["test"], "hookedllm_metadata": {"key": "value"}},
         }
 
-        call_input, context = AnthropicAdapter.normalize_input(
-            "anthropic", None, **kwargs
-        )
+        call_input, context = AnthropicAdapter.normalize_input("anthropic", None, **kwargs)
 
         assert call_input.model == "claude-3-opus-20240229"
         assert len(call_input.messages) == 1
@@ -195,9 +192,7 @@ class TestAnthropicAdapter:
             ],
         }
 
-        call_input, context = AnthropicAdapter.normalize_input(
-            "anthropic", None, **kwargs
-        )
+        call_input, context = AnthropicAdapter.normalize_input("anthropic", None, **kwargs)
 
         assert len(call_input.messages) == 1
         assert call_input.messages[0].content == "Hello from block"
@@ -286,7 +281,7 @@ class TestProviderDetection:
                 self.chat = MagicMock()
                 self.chat.completions = MagicMock()
                 self.chat.completions.create = lambda: None  # Make it callable
-        
+
         mock_client = MockOpenAIClient()
         # messages attribute doesn't exist - accessing it will raise AttributeError
 

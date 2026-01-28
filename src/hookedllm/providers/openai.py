@@ -39,20 +39,20 @@ class OpenAIAdapter:
         try:
             # Use getattr with sentinel to avoid MagicMock auto-creation
             _SENTINEL = object()
-            
+
             # Check for OpenAI structure
             chat = getattr(client, "chat", _SENTINEL)
             if chat is _SENTINEL:
                 return False
-            
+
             completions = getattr(chat, "completions", _SENTINEL)
             if completions is _SENTINEL:
                 return False
-            
+
             create_method = getattr(completions, "create", _SENTINEL)
             if create_method is _SENTINEL or not callable(create_method):
                 return False
-            
+
             # Check if it also has Anthropic structure
             # If both exist, Anthropic should have matched first
             # But if Anthropic didn't match, it means messages.create wasn't properly set
@@ -70,11 +70,11 @@ class OpenAIAdapter:
                     # But to be safe, if both are properly callable, prefer Anthropic
                     # Actually, let's be conservative: if both exist, don't match OpenAI
                     return False
-            
+
             return True
         except (AttributeError, TypeError):
             pass
-        
+
         return False
 
     @staticmethod

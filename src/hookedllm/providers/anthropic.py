@@ -50,7 +50,7 @@ class AnthropicAdapter:
                     return True
         except (AttributeError, TypeError):
             pass
-        
+
         return False
 
     @staticmethod

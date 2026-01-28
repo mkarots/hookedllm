@@ -30,8 +30,8 @@ def _detect_provider_adapter(client: Any) -> Any:
     """
     # Import adapters here to avoid circular imports
     try:
-        from ..providers.openai import OpenAIAdapter
         from ..providers.anthropic import AnthropicAdapter
+        from ..providers.openai import OpenAIAdapter
     except ImportError:
         # If adapters aren't available, fall back to OpenAI detection
         # This allows the package to work even if optional deps aren't installed
@@ -237,7 +237,11 @@ class HookedCompletionsWrapper:
         """
         # Use adapter to normalize input
         call_input, context = self._adapter.normalize_input(
-            self._adapter.PROVIDER_NAME, self._original.create, model=model, messages=messages, **kwargs
+            self._adapter.PROVIDER_NAME,
+            self._original.create,
+            model=model,
+            messages=messages,
+            **kwargs,
         )
 
         # Collect all hooks from all scopes
