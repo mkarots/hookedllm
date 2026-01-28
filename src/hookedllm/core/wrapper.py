@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .protocols import HookExecutor, ScopeHookStore
-from .types import CallContext, CallInput, CallOutput, CallResult
+from .types import CallResult
 
 
 def _detect_provider_adapter(client: Any) -> Any:

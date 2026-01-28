@@ -8,8 +8,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from hookedllm.core.types import CallContext, CallInput, Message
-
 
 class TestOpenAIAdapter:
     """Test OpenAI adapter."""

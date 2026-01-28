@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
-from ..core.types import CallContext, CallInput, CallOutput, Message
+from ..core.types import CallContext, CallInput, CallOutput
 
 
 class ProviderAdapter(Protocol):

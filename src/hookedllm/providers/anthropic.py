@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Any
 
 from ..core.types import CallContext, CallInput, CallOutput, Message
-from .protocol import ProviderAdapter
 
 
 class AnthropicAdapter:
