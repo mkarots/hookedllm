@@ -213,7 +213,7 @@ class HookedCompletionsWrapper:
         self._executor = executor
         self._adapter = adapter
 
-    async def create(self, *, model: str, messages: list[dict], **kwargs) -> Any:
+    async def create(self, *, model: str, messages: list[dict], **kwargs: Any) -> Any:
         """
         Hooked create method.
 

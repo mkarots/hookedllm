@@ -36,6 +36,7 @@ from .core import (
     InMemoryScopeRegistry,
     Rule,
     RuleBuilder,
+    ScopeHookStore,
     ScopeRegistry,
 )
 
@@ -93,7 +94,7 @@ class HookedLLMContext:
         # Create wrapper with injected dependencies (DI!)
         return HookedClientWrapper(client, scopes, self.executor)
 
-    def scope(self, name: str):
+    def scope(self, name: str) -> ScopeHookStore:
         """
         Get a scope manager from this context.
 
@@ -108,7 +109,7 @@ class HookedLLMContext:
         """
         return self.registry.get_scope(name)
 
-    def global_scope(self):
+    def global_scope(self) -> ScopeHookStore:
         """
         Get the global scope (always active).
 
@@ -164,7 +165,7 @@ def wrap(client: Any, scope: str | list[str] | None = None) -> HookedClientWrapp
     return _default_context.wrap(client, scope)
 
 
-def scope(name: str):
+def scope(name: str) -> ScopeHookStore:
     """
     Get a scope manager (uses default context).
 

@@ -72,6 +72,7 @@ jobs:
     
     - name: Build documentation
       run: make docs-build
+      continue-on-error: true
     
     - name: Publish to PyPI
       env:

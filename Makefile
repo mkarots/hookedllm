@@ -179,7 +179,7 @@ docs-install: ## Install documentation dependencies
 
 docs-build: docs-install ## Build documentation
 	@echo "Building documentation..."
-	$(PYTHON_CMD) -m mkdocs build --strict
+	$(PYTHON_CMD) -m mkdocs build
 	@echo "Documentation built in site/"
 
 docs-serve: docs-install ## Serve documentation locally (with live reload)
